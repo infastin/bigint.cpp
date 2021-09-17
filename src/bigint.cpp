@@ -27,6 +27,12 @@
 
 #include "bigint.hpp"
 
+#ifdef _WIN32
+#define CLZ(x) __lzcnt(x)
+#elif __unix__
+#define CLZ(x) __builtin_clz(x)
+#endif
+
 /* Private {{{ */
 
 void bigint::clamp()
@@ -1213,7 +1219,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	// same amount.  We may have to append a high-order
 	// digit on the dividend; we do that unconditionally.
 
-	int s = __builtin_clz(rhs.words[n - 1]) + 1;
+	int s = CLZ(rhs.words[n - 1]) + 1;
 	rn.resize(n, 0);
 
 	for (size_t i = n - 1; i > 0; --i)
