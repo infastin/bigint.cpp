@@ -27,6 +27,220 @@
 
 #include "bigint.hpp"
 
+/* Private {{{ */
+
+void bigint::clamp()
+{
+	for (auto iter = words.end() - 1; iter > words.begin(); --iter)
+	{
+		if (*iter != 0)
+			return;
+		else
+			words.erase(iter);
+	}
+}
+
+void bigint::from_string(const std::string &s)
+{
+	int base = 10;
+	int sign = 0;
+	size_t i = 0;
+	int digit = 0;
+
+	if (s[i] == '-')
+	{
+		sign = 1;
+		i++;
+	}
+
+	std::string base_str = s.substr(i, 2);
+
+	if (base_str == "0x")
+	{
+		base = 16;
+		i += 2;
+	}
+	else if (base_str == "0o")
+	{
+		base = 8;
+		i += 2;
+	}
+	else if (base_str == "0b")
+	{
+		base = 2;
+		i += 2;
+	}
+
+	for (; i < s.size(); ++i)
+	{
+		char c = s[i];
+		if (c >= '0' && c <= '9')
+			digit = c - '0';
+		else if (c >= 'A' && c <= 'Z')
+			digit = c - 'A' + 10;
+		else if (c >= 'a' && c <= 'z')
+			digit = c - 'a' + 10;
+		else
+			throw bigint_exception("string is not a number!");
+
+		if (digit >= base)
+			throw bigint_exception("string is not a number!");
+
+		*this *= base;
+		*this += digit;
+	}
+
+	this->sign = sign;
+}
+
+int bigint::cmp(const bigint &rhs, bool abs = false) const
+{
+	if (!abs)
+	{
+		if (sign < rhs.sign)
+			return 1;
+		if (sign > rhs.sign)
+			return -1;
+	}
+
+	if (words.size() > rhs.words.size())
+		return 1;
+	if (words.size() < rhs.words.size())
+		return -1;
+
+	if (words.size() == 0)
+		return 0;
+
+	for (size_t i = words.size() - 1; i >= 0; --i)
+	{
+		if (words[i] > rhs.words[i])
+			return 1;
+
+		if (words[i] < rhs.words[i])
+			return -1;
+
+		if (i == 0)
+			break;
+	}
+
+	return 0;
+}
+
+bigint bigint::add(const bigint &rhs) const
+{
+	bigint result = 0;
+
+	const bigint &hi = *this;
+	const bigint &lo = rhs;
+
+	result.words.resize(hi.words.size(), 0);
+
+	word_t carry = 0;
+	size_t i = 0;
+
+	for (; i < lo.words.size(); ++i)
+	{
+		word_t hi_word = hi.words[i];
+		word_t lo_word = lo.words[i];
+
+		word_t new_word = hi_word + lo_word + carry;
+
+		if ((lo_word == WORD_MAX && carry != 0)
+				|| (hi_word > WORD_MAX - lo_word - carry))
+			carry = 1;
+		else
+			carry = 0;
+
+		result.words[i] = new_word;
+	}
+
+	for (; i < hi.words.size(); ++i)
+	{
+		word_t hi_word = hi.words[i];
+		word_t new_word = hi_word + carry;
+
+		if (hi_word > WORD_MAX - carry)
+			carry = 1;
+		else
+			carry = 0;
+
+		result.words[i] = new_word;
+	}
+
+	if (carry != 0)
+	{
+		result.words.resize(hi.words.size() + 1, 0);
+		result.words[i] = carry;
+	}
+
+	return result;
+}
+
+bigint bigint::sub(const bigint &rhs) const
+{
+	bigint result = 0;
+
+	const bigint &hi = *this;
+	const bigint &lo = rhs;
+
+	result.words.resize(hi.words.size(), 0);
+
+	word_t carry = 0;
+	size_t i = 0;
+
+	for (; i < lo.words.size(); ++i)
+	{
+		word_t hi_word = hi.words[i];
+		word_t lo_word = lo.words[i];
+
+		word_t new_word = hi_word - lo_word - carry;
+
+		if ((hi_word == lo_word && carry != 0)
+				|| (lo_word > hi_word) 
+				|| (lo_word + carry > hi_word))
+			carry = 1;
+		else
+			carry = 0;
+
+		if (new_word != 0)
+			result.words[i] = new_word;
+	}
+
+	for (; i < hi.words.size(); ++i)
+	{
+		word_t hi_word = hi.words[i];
+		word_t new_word = hi_word - carry;
+
+		if (hi_word < carry)
+			carry = 1;
+		else
+			carry = 0;
+
+		if (new_word != 0)
+			result.words[i] = new_word;
+	}
+
+	result.clamp();
+	return result;
+}
+
+bigint bigint::invert(size_t size = 0) const
+{
+	bigint result = *this;
+
+	if (size != 0 && words.size() != size)
+		result.words.resize(size, 0);
+
+	for (size_t i = 0; i < result.words.size(); ++i)
+		result.words[i] = ~result.words[i];
+
+	result -= 1;
+
+	return result;
+}
+
+/* }}} Private */
+
 /* Constructors {{{ */
 
 bigint::bigint() : sign(0) 
@@ -895,90 +1109,48 @@ unsigned long long bigint::to_ullong() const
 
 /* Other Stuff {{{ */
 
-void bigint::from_string(const std::string &s)
+bigint bigint::abs() const
 {
-	int base = 10;
-	int sign = 0;
-	size_t i = 0;
-	int digit = 0;
-
-	if (s[i] == '-')
-	{
-		sign = 1;
-		i++;
-	}
-
-	std::string base_str = s.substr(i, 2);
-
-	if (base_str == "0x")
-	{
-		base = 16;
-		i += 2;
-	}
-	else if (base_str == "0o")
-	{
-		base = 8;
-		i += 2;
-	}
-	else if (base_str == "0b")
-	{
-		base = 2;
-		i += 2;
-	}
-
-	for (; i < s.size(); ++i)
-	{
-		char c = s[i];
-		if (c >= '0' && c <= '9')
-			digit = c - '0';
-		else if (c >= 'A' && c <= 'Z')
-			digit = c - 'A' + 10;
-		else if (c >= 'a' && c <= 'z')
-			digit = c - 'a' + 10;
-		else
-			throw bigint_exception("string is not a number!");
-
-		if (digit >= base)
-			throw bigint_exception("string is not a number!");
-
-		*this *= base;
-		*this += digit;
-	}
-
-	this->sign = sign;
+	bigint result = *this;
+	result.sign = 0;
+	return result;
 }
 
-int bigint::cmp(const bigint &rhs, bool abs) const
+bigint bigint::sqrt() const
 {
-	if (!abs)
+	if (*this == 0 || *this == 1)
+		return *this;
+
+	if (sign)
+		throw bigint_exception("sqrt called for non-positive integer");
+
+	bigint lo = 1;
+	bigint hi = *this / 2 + 1;
+	bigint mid, mid2;
+
+	while (lo < hi - 1)
 	{
-		if (sign < rhs.sign)
-			return 1;
-		if (sign > rhs.sign)
-			return -1;
-	}
+		mid = (lo + hi) / 2;
+		mid2 = mid * mid;
 
-	if (words.size() > rhs.words.size())
-		return 1;
-	if (words.size() < rhs.words.size())
-		return -1;
-
-	if (words.size() == 0)
-		return 0;
-
-	for (size_t i = words.size() - 1; i >= 0; --i)
-	{
-		if (words[i] > rhs.words[i])
-			return 1;
-
-		if (words[i] < rhs.words[i])
-			return -1;
-
-		if (i == 0)
+		if (mid2 == *this)
+		{
+			lo = mid;
 			break;
+		}
+		
+		if (mid2 < *this)
+			lo = mid;
+		else
+			hi = mid;
 	}
 
-	return 0;
+	return lo;
+}
+
+size_t bigint::size() const
+{
+	return words.size() * sizeof(word_t);
 }
 
 std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
@@ -1125,174 +1297,6 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	rem.clamp();
 
 	return std::pair(quot, rem);
-}
-
-void bigint::clamp()
-{
-	for (auto iter = words.end() - 1; iter > words.begin(); --iter)
-	{
-		if (*iter != 0)
-			return;
-		else
-			words.erase(iter);
-	}
-}
-
-bigint bigint::abs() const
-{
-	bigint result = *this;
-	result.sign = 0;
-	return result;
-}
-
-bigint bigint::sqrt() const
-{
-	if (*this == 0 || *this == 1)
-		return *this;
-
-	if (sign)
-		throw bigint_exception("sqrt called for non-positive integer");
-
-	bigint lo = 1;
-	bigint hi = *this / 2 + 1;
-	bigint mid, mid2;
-
-	while (lo < hi - 1)
-	{
-		mid = (lo + hi) / 2;
-		mid2 = mid * mid;
-
-		if (mid2 == *this)
-		{
-			lo = mid;
-			break;
-		}
-		
-		if (mid2 < *this)
-			lo = mid;
-		else
-			hi = mid;
-	}
-
-	return lo;
-}
-
-bigint bigint::add(const bigint &rhs) const
-{
-	bigint result = 0;
-
-	const bigint &hi = *this;
-	const bigint &lo = rhs;
-
-	result.words.resize(hi.words.size(), 0);
-
-	word_t carry = 0;
-	size_t i = 0;
-
-	for (; i < lo.words.size(); ++i)
-	{
-		word_t hi_word = hi.words[i];
-		word_t lo_word = lo.words[i];
-
-		word_t new_word = hi_word + lo_word + carry;
-
-		if ((lo_word == WORD_MAX && carry != 0)
-				|| (hi_word > WORD_MAX - lo_word - carry))
-			carry = 1;
-		else
-			carry = 0;
-
-		result.words[i] = new_word;
-	}
-
-	for (; i < hi.words.size(); ++i)
-	{
-		word_t hi_word = hi.words[i];
-		word_t new_word = hi_word + carry;
-
-		if (hi_word > WORD_MAX - carry)
-			carry = 1;
-		else
-			carry = 0;
-
-		result.words[i] = new_word;
-	}
-
-	if (carry != 0)
-	{
-		result.words.resize(hi.words.size() + 1, 0);
-		result.words[i] = carry;
-	}
-
-	return result;
-}
-
-bigint bigint::sub(const bigint &rhs) const
-{
-	bigint result = 0;
-
-	const bigint &hi = *this;
-	const bigint &lo = rhs;
-
-	result.words.resize(hi.words.size(), 0);
-
-	word_t carry = 0;
-	size_t i = 0;
-
-	for (; i < lo.words.size(); ++i)
-	{
-		word_t hi_word = hi.words[i];
-		word_t lo_word = lo.words[i];
-
-		word_t new_word = hi_word - lo_word - carry;
-
-		if ((hi_word == lo_word && carry != 0)
-				|| (lo_word > hi_word) 
-				|| (lo_word + carry > hi_word))
-			carry = 1;
-		else
-			carry = 0;
-
-		if (new_word != 0)
-			result.words[i] = new_word;
-	}
-
-	for (; i < hi.words.size(); ++i)
-	{
-		word_t hi_word = hi.words[i];
-		word_t new_word = hi_word - carry;
-
-		if (hi_word < carry)
-			carry = 1;
-		else
-			carry = 0;
-
-		if (new_word != 0)
-			result.words[i] = new_word;
-	}
-
-	result.clamp();
-	return result;
-}
-
-bigint bigint::invert(size_t size) const
-{
-	bigint result = *this;
-
-	if (size != 0 && words.size() != size)
-		result.words.resize(size, 0);
-
-	for (size_t i = 0; i < result.words.size(); ++i)
-		result.words[i] = ~result.words[i];
-
-	result -= 1;
-	
-	return result;
-}
-
-size_t bigint::size() const
-{
-	return words.size() * sizeof(word_t);
 }
 
 /* }}} Other Stuff */

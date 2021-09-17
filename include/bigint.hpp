@@ -123,10 +123,9 @@ public:
 	/* Other Stuff */
 	bigint abs() const;
 	bigint sqrt() const; // throw
+	size_t size() const;
 
 	std::pair<bigint, bigint> div(const bigint &rhs) const;
-
-	size_t size() const;
 
 	/* Conversion */
 	std::string to_string(int base = 10) const;
@@ -139,15 +138,15 @@ public:
 	unsigned long long to_ullong() const;
 
 private:
-	void from_string(const std::string &s);
-	void clamp();
-	
-	int cmp(const bigint &rhs, bool abs = false) const;
-
-	bigint add(const bigint &rhs) const;
-	bigint sub(const bigint &rhs) const;
-	bigint invert(size_t size = 0) const;
-
 	int sign;
 	std::vector<word_t> words;
+
+	void clamp();
+	void from_string(const std::string&);
+	
+	int cmp(const bigint&, bool) const;
+
+	bigint add(const bigint&) const;
+	bigint sub(const bigint&) const;
+	bigint invert(size_t) const;
 };
