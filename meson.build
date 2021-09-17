@@ -10,16 +10,16 @@ project('bigint', 'cpp',
 
 cxx = meson.get_compiler('cpp')
 
-test_cppflags = []
+cppflags = []
 
 if cxx.get_id() == 'g++' or cxx.get_id() == 'clang'
-  test_cppflags = [
+  cppflags = [
 	'-pipe',
 	'-funsigned-char'
   ]
 endif
 
-add_project_arguments(cxx.get_supported_arguments(test_cppflags), language: 'cpp')
+add_project_arguments(cxx.get_supported_arguments(cppflags), language: 'cpp')
 
 inc = include_directories('include')
 
@@ -30,7 +30,7 @@ subdir('test')
 pkg_config = import('pkgconfig')
 pkg_config.generate(
   libraries: libbigint,
-  version: '1.0.1',
+  version: '1.0',
   name: 'libbigint',
   description: 'Arbitrary-Precision Integer Arithmetic Library'
 )
