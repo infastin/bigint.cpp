@@ -1,0 +1,62 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(bigint VERSION 1.0 LANGUAGES CXX)
+
+# Set standart
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Compile commands for lang server
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+include(GNUInstallDirs)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+set(INCLUDE_DIR include)
+set(SRC_DIR src)
+
+set(SRC_FILES 
+	${SRC_DIR}/bigint.cpp
+)
+
+set(HEADER_FILES
+	${INCLUDE_DIR}/bigint.hpp
+)
+
+set(COMPILE_OPTIONS
+	-g -O2 -pipe 
+	-D_FORTIFY_SOURCE=2 
+	-Wall -funsigned-char 
+	-std=c++17 -fms-extensions
+)
+
+add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
+set_target_properties(${PROJECT_NAME} PROPERTIES 
+	VERSION ${PROJECT_VERSION}
+)
+
+target_compile_options(${PROJECT_NAME} PUBLIC ${COMPILE_OPTIONS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}>
+	$<INSTALL_INTERFACE:${INCLUDE_DIR}>
+	PRIVATE ${SRC_DIR})
+
+install(TARGETS ${PROJECT_NAME} EXPORT BigIntConfig
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY ${INCUDE_DIR} DESTINATION
+	${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+)
+
+install(EXPORT BigIntConfig DESTINATION share/BigInt/cmake)
+
+export(TARGETS ${PROJECT_NAME} FILE BigIntConfig.cmake)
+
+add_executable(test test.cpp)
+target_link_libraries(test ${PROJECT_NAME})
