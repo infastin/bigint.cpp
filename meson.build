@@ -31,6 +31,6 @@ pkg_config = import('pkgconfig')
 pkg_config.generate(
   libraries: libbigint,
   version: '1.0',
-  name: 'libbigint',
+  name: 'bigint',
   description: 'Arbitrary-Precision Integer Arithmetic Library'
 )
