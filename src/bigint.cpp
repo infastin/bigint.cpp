@@ -37,12 +37,12 @@
 
 void bigint::clamp()
 {
-	for (auto iter = words.end() - 1; iter > words.begin(); --iter)
+	for (auto it = words.end() - 1; it > words.begin(); --it)
 	{
-		if (*iter != 0)
+		if (*it != 0)
 			return;
 		else
-			words.erase(iter);
+			words.erase(it);
 	}
 }
 
@@ -305,7 +305,7 @@ bigint::bigint(long l) : sign(l < 0)
 	{
 		words.push_back(ul & WORD_MASK);
 		ul >>= WORD_BIT;
-	} while(ul > 0);
+	} while (ul > 0);
 }
 
 bigint::bigint(long long l) : sign(l < 0)
@@ -329,7 +329,7 @@ bigint::bigint(long long l) : sign(l < 0)
 	{
 		words.push_back(ul & WORD_MASK);
 		ul >>= WORD_BIT;
-	} while(ul > 0);
+	} while (ul > 0);
 }
 
 bigint::bigint(unsigned int l) : sign(0)
