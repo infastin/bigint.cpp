@@ -146,7 +146,7 @@ bigint bigint::add(const bigint &rhs) const
 		word_t new_word = hi_word + lo_word + carry;
 
 		if ((lo_word == WORD_MAX && carry != 0)
-				|| (hi_word > WORD_MAX - lo_word - carry))
+			|| (hi_word > WORD_MAX - lo_word - carry))
 			carry = 1;
 		else
 			carry = 0;
@@ -196,8 +196,8 @@ bigint bigint::sub(const bigint &rhs) const
 		word_t new_word = hi_word - lo_word - carry;
 
 		if ((hi_word == lo_word && carry != 0)
-				|| (lo_word > hi_word) 
-				|| (lo_word + carry > hi_word))
+			|| (lo_word > hi_word) 
+			|| (lo_word + carry > hi_word))
 			carry = 1;
 		else
 			carry = 0;
