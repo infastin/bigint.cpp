@@ -983,8 +983,6 @@ std::string bigint::to_string(int base) const
 		return std::string("0");
 
 	bigint t = *this;
-	int sign = t.sign;
-
 	std::string result;
 
 	while (t != 0)
