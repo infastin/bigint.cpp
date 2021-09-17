@@ -977,23 +977,20 @@ std::istream& operator>>(std::istream &s, bigint &bi)
 
 /* Conversion {{{ */
 
-std::string bigint::to_string(int base) const
+std::string bigint::to_string(int base, const std::string &prefix) const
 {
-	if (base < 2)
-		throw bigint_exception("base of integer can't be less than 2");
-
-	if (base > 16)
-		throw bigint_exception("base of integer can't be greater than 16");
+	if (base < 2 || base > 16)
+		throw bigint_exception("base of integer can only be in the range [2, 16]");
 
 	if (*this == 0)
 		return std::string("0");
 
-	bigint t = *this;
+	bigint tmp = *this;
 	std::string result;
 
-	while (t != 0)
+	while (tmp != 0)
 	{
-		auto qr = t.div(base);
+		auto qr = tmp.div(base);
 		bigint quot = qr.first;
 		bigint rem = qr.second;
 		char c;
@@ -1004,8 +1001,11 @@ std::string bigint::to_string(int base) const
 			c = rem.words[0] + 'A' - 10;
 
 		result.push_back(c);
-		t = quot;
+		tmp = quot;
 	}
+
+	for (auto iter = prefix.end() - 1; iter >= prefix.begin(); --iter) 
+		result.push_back(*iter);
 
 	if (sign == 1)
 		result.push_back('-');

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(bigint VERSION 1.0 LANGUAGES CXX)
+project(bigint VERSION 1.0.1 LANGUAGES CXX)
 
 # Set standart
 set(CMAKE_CXX_STANDARD 17)

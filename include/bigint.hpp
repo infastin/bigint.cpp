@@ -128,7 +128,7 @@ public:
 	std::pair<bigint, bigint> div(const bigint &rhs) const;
 
 	/* Conversion */
-	std::string to_string(int base = 10) const;
+	std::string to_string(int base = 10, const std::string &prefix = "") const;
 	
 	int to_int() const;
 	long to_long() const;
