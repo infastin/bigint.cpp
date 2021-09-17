@@ -36,6 +36,16 @@ typedef int64_t  slword_t;
 #define WORD_MASK WORD_MAX
 #define WORD_BASE (1ULL << WORD_BIT)
 
+#ifdef _WIN32
+	#ifdef BIGINT_EXPORTS
+		#define BIGINT_API __declspec(dllexport)
+	#else
+		#define BIGINT_API __declspec(dllimport)
+	#endif
+#else
+	#define BIGINT_API
+#endif
+
 class bigint_exception: public std::exception
 {
 public:
@@ -46,7 +56,7 @@ private:
 	std::string txt;
 };
 
-class bigint
+class BIGINT_API bigint
 {
 	/* Stream Operators */
 	friend std::ostream& operator<<(std::ostream &s, const bigint &bi);
