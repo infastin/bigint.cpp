@@ -5,4 +5,3 @@ ctags -R --exclude={build,compile_commands.json,makeproject.sh,CMakeLists.txt,do
 #doxygen doxygen.conf
 cd build
 meson compile
-sudo meson install
