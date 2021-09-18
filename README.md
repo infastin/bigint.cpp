@@ -1,6 +1,6 @@
 # Introduction
 
-**bigint.cpp** - Is An Arbitrary-Precision Integer Arithmetic Library
+**bigint.cpp** - Is An Arbitrary-Precision Integer Arithmetic Library written in C++.
 
 # Installation
 
