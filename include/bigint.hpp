@@ -59,8 +59,8 @@ private:
 class BIGINT_API bigint
 {
 	/* Stream Operators */
-	friend std::ostream& operator<<(std::ostream &s, const bigint &bi);
-	friend std::istream& operator>>(std::istream &s, bigint &bi);
+	BIGINT_API friend std::ostream& operator<<(std::ostream &s, const bigint &bi);
+	BIGINT_API friend std::istream& operator>>(std::istream &s, bigint &bi);
 
 public:
 	/* Constructors */

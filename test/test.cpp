@@ -53,14 +53,16 @@ public:
 		assert(bigint(8).sqrt() == 2);
 		assert(bigint(9).sqrt() == 3);
 
-		std::mt19937 mt(time(0));
+		std::mt19937 g(time(0));
 
 		for (int i = 0; i < 1000; ++i)
 		{
-			long r1 = mt();
-			bigint i1 = r1;
+			bigint i1 = g();
+			bigint root = i1.sqrt();
+			bigint root1 = root + 1;
 
-			assert(i1.sqrt() == (long) std::sqrt((double) r1));
+			assert((root * root) <= i1 && i1 <= (root1 * root1));
+			assert((i1 * i1).sqrt() == i1);
 		}
 	}
 
@@ -72,22 +74,22 @@ public:
 		assert(bigint(-22).abs() == 22);
 		assert(bigint(-76).abs() == 76);
 
-		std::mt19937 mt(time(0));
+		std::mt19937 g(time(0));
 
 		for (int i = 0; i < 1000; ++i)
 		{
-			long r1 = -mt();
-			bigint i1 = r1;
+			bigint r1 = g();
+			bigint i1 = -r1;
 
-			assert(i1.abs() == std::abs(r1));
+			assert(i1.abs() == (-r1).abs());
 		}
 	}
 
 	void arithmetic()
 	{
-		std::mt19937 mt(time(0));
+		std::mt19937 g(time(0));
 		std::random_device rd;
-		std::uniform_int_distribution<int> dist(-5, 5);
+		std::uniform_int_distribution<int> dist(-10, 10);
 
 		bigint a = "0x1FFFFFFFFFFFFFFFF";
 		bigint b = "0xF0000000000";
@@ -98,9 +100,10 @@ public:
 		{
 			bigint i1, i2;
 
-			long r1 = (long) mt() >> 5;
-			long r2 = (long) mt() >> 5;
-			long r3 = dist(rd);
+			int64_t r1 = g() & INT32_MAX;
+			int64_t r2 = g() & INT32_MAX;
+			
+			int32_t r3 = dist(rd);
 
 			{
 				i1 = r1++;
@@ -131,31 +134,31 @@ public:
 			{
 				i1 = r1;
 				i1 += r2;
-				assert(i1 == r1 + r2);
+				assert(i1 == (r1 + r2));
 			}
 
 			{
 				i1 = r1;
 				i1 -= r2;
-				assert(i1 == r1 - r2);
+				assert(i1 == (r1 - r2));
 			}
 
 			{
 				i1 = r1;
 				i1 *= r2;
-				assert(i1 == r1 * r2);
+				assert(i1 == (r1 * r2));
 			}
 
 			{
 				i1 = r1;
 				i1 /= r2;
-				assert(i1 == r1 / r2);
+				assert(i1 == (r1 / r2));
 			}
 
 			{
 				i1 = r1;
 				i1 %= r2;
-				assert(i1 == r1 % r2);
+				assert(i1 == (r1 % r2));
 			}
 
 			{
@@ -163,9 +166,9 @@ public:
 				i1 <<= r3;
 
 				if (r3 > 0)
-					assert(i1 == r1 << r3);
+					assert(i1 == (r1 << r3));
 				else
-					assert(i1 == r1 >> -r3);
+					assert(i1 == (r1 >> -r3));
 			}
 
 			{
@@ -173,9 +176,9 @@ public:
 				i1 >>= r3;
 
 				if (r3 > 0)
-					assert(i1 == r1 >> r3);
+					assert(i1 == (r1 >> r3));
 				else
-					assert(i1 == r1 << -r3);
+					assert(i1 == (r1 << -r3));
 			}
 
 			{
