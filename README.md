@@ -4,7 +4,7 @@
 
 # Installation
 
-1. First of all you should install `meson`, `pkg-config`.
+1. First of all you should install `meson` and `pkg-config`.
 	* On Linux it can be done by using your distro package manager.
 	* On Windows you can use `chocolatey` or `vcpkg`.
 2. Clone this project and enter the project directory:
