@@ -251,7 +251,7 @@ bigint bigint::invert(size_t size = 0) const
 
 bigint::bigint() : sign(0) 
 {
-	words.push_back((word_t) 0);
+	words.push_back(0);
 }
 
 bigint::bigint(const char *c)
@@ -1223,7 +1223,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	rn.resize(n, 0);
 
 	for (size_t i = n - 1; i > 0; --i)
-		rn[i] = ((rhs.words[i] << s) & mask) | (((lword_t) rhs.words[i - 1] >> (WORD_BIT - s)) & mask);
+		rn[i] = ((rhs.words[i] << s) & mask) | ((static_cast<lword_t>(rhs.words[i - 1]) >> (WORD_BIT - s)) & mask);
 
 	rn[0] = (rhs.words[0] << s) & mask;
 
@@ -1231,7 +1231,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	tn[m] = (words[m - 1] >> (WORD_BIT - s)) & mask;
 
 	for (size_t i = m - 1; i > 0; --i)
-		tn[i] = ((words[i] << s) & mask) | (((lword_t) words[i - 1] >> (WORD_BIT - s)) & mask);
+		tn[i] = ((words[i] << s) & mask) | ((static_cast<lword_t>(words[i - 1]) >> (WORD_BIT - s)) & mask);
 
 	tn[0] = (words[0] << s) & mask;
 
@@ -1243,7 +1243,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 
 		while (1) 
 		{
-			if (qhat >= b || ((word_t) qhat * (lword_t) rn[n - 2]) > (b * rhat + tn[j + n - 2]))
+			if (qhat >= b || (static_cast<word_t>(qhat) * static_cast<lword_t>(rn[n - 2])) > (b * rhat + tn[j + n - 2]))
 			{
 				qhat -= 1;
 				rhat += rn[n-1];
@@ -1259,7 +1259,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 		k = 0;
 		for (size_t i = 0; i < n; ++i)
 		{
-			p = (word_t) qhat * (lword_t) rn[i];
+			p = static_cast<word_t>(qhat) * static_cast<lword_t>(rn[i]);
 			t = tn[i + j] - k - (p & mask);
 			tn[i + j] = t & mask;
 			k = (p / b) - (t / b);
@@ -1277,7 +1277,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 
 			for (size_t i = 0; i < n; ++i)
 			{
-				t = (lword_t) tn[i + j] + tn[i] + k;
+				t = static_cast<lword_t>(tn[i + j]) + tn[i] + k;
 				tn[i + j] = t & mask;
 				k = t / b;
 			}
@@ -1293,7 +1293,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	// it and pass it back.
 
 	for (size_t i = 0; i < n; i++)
-		rem.words[i] = ((tn[i] >> s) & mask) | (((lword_t) tn[i + 1] << (WORD_BIT - s)) & mask);
+		rem.words[i] = ((tn[i] >> s) & mask) | ((static_cast<lword_t>(tn[i + 1]) << (WORD_BIT - s)) & mask);
 
 	rem.words[n - 1] = (tn[n - 1] >> s) & mask;
 

@@ -1,5 +1,5 @@
 project('bigint', 'cpp',
-  version: '1.0.1',
+  version: '1.0.2',
   default_options: [
 	'buildtype=debugoptimized',
 	'warning_level=1',

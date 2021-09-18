@@ -1,7 +1,6 @@
 #include <cassert>
 #include <climits>
 #include <random>
-#include <cmath>
 
 #include "bigint.hpp"
 
@@ -100,8 +99,8 @@ public:
 		{
 			bigint i1, i2;
 
-			int64_t r1 = g() & INT32_MAX;
-			int64_t r2 = g() & INT32_MAX;
+			int64_t r1 = static_cast<int32_t>(g());
+			int64_t r2 = static_cast<int32_t>(g());
 			
 			int32_t r3 = dist(rd);
 
