@@ -17,6 +17,10 @@ if cxx.get_id() == 'g++' or cxx.get_id() == 'clang'
 	'-pipe',
 	'-funsigned-char'
   ]
+elif cxx.get_id() == 'msvc'
+  cppflags = [
+	'/DBIGINT_EXPORTS',
+  ]
 endif
 
 add_project_arguments(cxx.get_supported_arguments(cppflags), language: 'cpp')
