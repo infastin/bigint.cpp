@@ -148,8 +148,8 @@ public:
 	unsigned long long to_ullong() const;
 
 private:
-	int sign;
 	std::vector<word_t> words;
+	int sign;
 
 	void clamp();
 	void from_string(const std::string&);
