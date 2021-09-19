@@ -41,8 +41,7 @@ target_link_libraries(main ${LIBBIGINT_LIBRARIES})
 ```meson
 bigint_dep = dependency('libbigint')
 executable('main', 'main.cpp',
-	dependencies: bigint_dep,
-)
+	dependencies: bigint_dep)
 ```
 
 ### Note
