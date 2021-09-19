@@ -355,7 +355,7 @@ bigint::bigint(unsigned long long l) : sign(0)
 	} while(l > 0);
 }
 
-bigint::bigint(const bigint &l) : sign(l.sign), words(l.words) {}
+bigint::bigint(const bigint &l) : words(l.words), sign(l.sign) {}
 
 /* }}} Constructors */
 
