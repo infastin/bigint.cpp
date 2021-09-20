@@ -1,4 +1,4 @@
-project('bigint', 'cpp',
+project('libbigint', 'cpp',
   version: '1.0.3',
   default_options: [
 	'buildtype=debugoptimized',
