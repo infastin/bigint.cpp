@@ -80,8 +80,8 @@ public:
 	bigint(const bigint &l);
 
 	/* Named constructors */
-	static bigint from_byte_array(const std::string &b);
-	static bigint from_byte_array(const char *b, size_t sz);
+	static bigint from_byte_array(const std::string &ba);
+	static bigint from_byte_array(const char *ba, size_t sz);
 
 	/* Assignment Operators */
 	bigint &operator=(const char *c);

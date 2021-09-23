@@ -108,9 +108,9 @@ void bigint::conv_string(const std::string &s)
 	this->sign = sign;
 }
 
-void bigint::conv_byte_array(const std::string &b)
+void bigint::conv_byte_array(const std::string &ba)
 {
-	if (b.empty())
+	if (ba.empty())
 	{
 		words.push_back(0);
 		sign = 0;
@@ -118,17 +118,17 @@ void bigint::conv_byte_array(const std::string &b)
 		return;
 	}
 
-	size_t vsize = b.size() - 1;
-	const char *vdata = b.data();
-	words.resize(vsize / 4, 0);
+	size_t ba_size = ba.size() - 1;
+	const char *ba_data = ba.data();
+	words.resize(ba_size / 4, 0);
 
-	for (size_t i = 0; i < words.size(); ++i, vdata += WORD_SIZE)
-		memcpy(&words[i], vdata, 4);
+	for (size_t i = 0; i < words.size(); ++i, ba_data += WORD_SIZE)
+		memcpy(&words[i], ba_data, 4);
 
-	sign = b.back();
+	sign = ba.back();
 }
 
-void bigint::conv_byte_array(const char *b, size_t sz)
+void bigint::conv_byte_array(const char *ba, size_t sz)
 {
 	if (sz == 0)
 	{
@@ -138,14 +138,14 @@ void bigint::conv_byte_array(const char *b, size_t sz)
 		return;
 	}
 
-	size_t vsize = sz - 1;
-	const char *vdata = b;
-	words.resize(vsize / 4, 0);
+	size_t ba_size = sz - 1;
+	const char *ba_data = ba;
+	words.resize(ba_size / 4, 0);
 
-	for (size_t i = 0; i < words.size(); ++i, vdata += WORD_SIZE)
-		memcpy(&words[i], vdata, 4);
+	for (size_t i = 0; i < words.size(); ++i, ba_data += WORD_SIZE)
+		memcpy(&words[i], ba_data, 4);
 
-	sign = b[sz - 1];
+	sign = ba[sz - 1];
 }
 
 int bigint::cmp(const bigint &rhs, bool abs = false) const
@@ -420,17 +420,17 @@ bigint::bigint(const bigint &l)
 
 /* Named constructors {{{ */
 
-bigint bigint::from_byte_array(const char *b, size_t sz)
+bigint bigint::from_byte_array(const char *ba, size_t sz)
 {
 	bigint result;
-	result.conv_byte_array(b, sz);
+	result.conv_byte_array(ba, sz);
 	return result;
 }
 
-bigint bigint::from_byte_array(const std::string &b)
+bigint bigint::from_byte_array(const std::string &ba)
 {
 	bigint result;
-	result.conv_byte_array(b);
+	result.conv_byte_array(ba);
 	return result;
 }
 
