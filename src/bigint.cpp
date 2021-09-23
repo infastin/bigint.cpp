@@ -34,7 +34,7 @@ typedef int64_t slword_t;
 #define WORD_MAX UINT32_MAX
 #define WORD_MASK WORD_MAX
 #define WORD_BASE (1ULL << WORD_BITN)
-#define WORD_SIZE (sizeof(word_t))
+#define WORD_SIZE 4
 
 #ifdef _WIN32
 	#define CLZ(x) __lzcnt(x)
