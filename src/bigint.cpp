@@ -128,6 +128,26 @@ void bigint::conv_byte_array(const std::string &b)
 	sign = b.back();
 }
 
+void bigint::conv_byte_array(const char *b, size_t sz)
+{
+	if (sz == 0)
+	{
+		words.push_back(0);
+		sign = 0;
+
+		return;
+	}
+
+	size_t vsize = sz - 1;
+	const char *vdata = b;
+	words.resize(vsize / 4, 0);
+
+	for (size_t i = 0; i < words.size(); ++i, vdata += WORD_SIZE)
+		memcpy(&words[i], vdata, 4);
+
+	sign = b[sz - 1];
+}
+
 int bigint::cmp(const bigint &rhs, bool abs = false) const
 {
 	if (!abs)
@@ -403,7 +423,7 @@ bigint::bigint(const bigint &l)
 bigint bigint::from_byte_array(const char *b, size_t sz)
 {
 	bigint result;
-	result.conv_byte_array({ b, sz });
+	result.conv_byte_array(b, sz);
 	return result;
 }
 
