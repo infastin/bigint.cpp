@@ -1,5 +1,5 @@
 project('libbigint', 'cpp',
-  version: '1.1.0',
+  version: '1.1.1',
   default_options: [
 	'buildtype=debugoptimized',
 	'warning_level=1',

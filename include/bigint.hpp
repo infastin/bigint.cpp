@@ -162,7 +162,6 @@ private:
 
 	void clamp();
 	void conv_string(const std::string &);
-
 	void conv_byte_array(const std::string &);
 
 	int cmp(const bigint &, bool) const;
