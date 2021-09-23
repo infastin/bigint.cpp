@@ -72,8 +72,10 @@ int main()
 	bigint c = "0o77";
 	bigint d = "0b10";
 	
-	// Useful methods
-	std::string str = a.to_string(16, "0x"); // You can specify base in the range [2, 16] and prefix of the output number
+	/* Useful methods */
+	
+	/* You can specify base in the range [2, 16] and prefix of the output number */
+	std::string str = a.to_string(16, "0x");
 	
 	int ia = a.to_int();
 	long la = a.to_long();
@@ -82,7 +84,8 @@ int main()
 	unsigned long ula = a.to_ulong();
 	unsigned long long ulla = a.to_ullong();
 	
-	std::vector<char> v = a.to_byte_array(); // Consists of groups of size 4 representing integers and the last byte representing the sign
+	/* Consists of groups of 4 bytes, the last byte represents the sign */
+	std::vector<char> v = a.to_byte_array();
 	bigint e = v;
 	
 	bigint asqrt = a.sqrt();
