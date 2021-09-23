@@ -55,6 +55,7 @@ All operators are overloaded. Use as regular integers.
 
 ```cpp
 #include <iostream>
+#include <vector>
 #include <bigint.hpp>
 
 int main()
@@ -80,6 +81,9 @@ int main()
 	unsigned int uia = a.to_uint();
 	unsigned long ula = a.to_ulong();
 	unsigned long long ulla = a.to_ullong();
+	
+	std::vector<char> v = a.to_byte_array(); // Consists of groups of size 4 representing integers and the last byte representing the sign
+	bigint e = v;
 	
 	bigint asqrt = a.sqrt();
 	bigint aabs = a.abs();

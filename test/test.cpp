@@ -246,6 +246,10 @@ public:
 
 			assert(i1 == i2);
 			assert(i2 == r1);
+
+			i1 = v1;
+
+			assert(i1 == i2);
 		}
 	}
 };
