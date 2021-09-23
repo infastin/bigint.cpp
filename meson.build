@@ -1,9 +1,9 @@
 project('libbigint', 'cpp',
-  version: '1.0.3',
+  version: '1.1.0',
   default_options: [
 	'buildtype=debugoptimized',
 	'warning_level=1',
-	'cpp_std=c++17',
+	'cpp_std=c++11',
   ],
   license: 'MIT'
 )
@@ -34,7 +34,7 @@ subdir('test')
 pkg_config = import('pkgconfig')
 pkg_config.generate(
   libraries: libbigint,
-  version: '1.0',
+  version: '1.1',
   name: 'libbigint',
   description: 'Arbitrary-Precision Integer Arithmetic Library'
 )

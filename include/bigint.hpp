@@ -23,18 +23,19 @@
 
 #pragma once
 
-#include <vector>
-#include <iostream>
 #include <cinttypes>
+#include <iostream>
+#include <vector>
 
 typedef uint32_t word_t;
 typedef uint64_t lword_t;
-typedef int64_t  slword_t;
+typedef int64_t slword_t;
 
 #define WORD_BIT 32
 #define WORD_MAX UINT32_MAX
 #define WORD_MASK WORD_MAX
 #define WORD_BASE (1ULL << WORD_BIT)
+#define WORD_SIZE (sizeof(word_t))
 
 #ifdef _WIN32
 	#ifdef BIGINT_EXPORTS
@@ -46,12 +47,15 @@ typedef int64_t  slword_t;
 	#define BIGINT_API
 #endif
 
-class bigint_exception: public std::exception
+class bigint_exception : public std::exception
 {
 public:
-	bigint_exception(const std::string& txt) throw() : std::exception(), txt(txt) {};
-	~bigint_exception() throw() {};
-	const char* what() const throw() { return txt.c_str(); };
+	bigint_exception(const std::string &txt) throw()
+		: std::exception()
+		, txt(txt){};
+	~bigint_exception() throw(){};
+	const char *what() const throw() { return txt.c_str(); };
+
 private:
 	std::string txt;
 };
@@ -59,14 +63,15 @@ private:
 class BIGINT_API bigint
 {
 	/* Stream Operators */
-	BIGINT_API friend std::ostream& operator<<(std::ostream &s, const bigint &bi);
-	BIGINT_API friend std::istream& operator>>(std::istream &s, bigint &bi);
+	BIGINT_API friend std::ostream &operator<<(std::ostream &s, const bigint &bi);
+	BIGINT_API friend std::istream &operator>>(std::istream &s, bigint &bi);
 
 public:
 	/* Constructors */
 	bigint();
 	bigint(const char *c);
 	bigint(const std::string &s);
+	bigint(const std::vector<char> &v);
 	bigint(int l);
 	bigint(long l);
 	bigint(long long l);
@@ -76,31 +81,32 @@ public:
 	bigint(const bigint &l);
 
 	/* Assignment Operators */
-	bigint& operator=(const char *c);
-	bigint& operator=(const std::string &s);
-	bigint& operator=(int l);
-	bigint& operator=(long l);
-	bigint& operator=(long long l);
-	bigint& operator=(unsigned int l);
-	bigint& operator=(unsigned long l);
-	bigint& operator=(unsigned long long l);
-	bigint& operator=(const bigint &l);
+	bigint &operator=(const char *c);
+	bigint &operator=(const std::string &s);
+	bigint &operator=(const std::vector<char> &v);
+	bigint &operator=(int l);
+	bigint &operator=(long l);
+	bigint &operator=(long long l);
+	bigint &operator=(unsigned int l);
+	bigint &operator=(unsigned long l);
+	bigint &operator=(unsigned long long l);
+	bigint &operator=(const bigint &l);
 
-	bigint& operator+=(const bigint &rhs);
-	bigint& operator-=(const bigint &rhs);
-	bigint& operator*=(const bigint &rhs);
-	bigint& operator/=(const bigint &rhs); // throw
-	bigint& operator%=(const bigint &rhs); // throw
-	bigint& operator>>=(int rhs);
-	bigint& operator<<=(int rhs);
-	bigint& operator&=(const bigint &rhs);
-	bigint& operator|=(const bigint &rhs);
-	bigint& operator^=(const bigint &rhs);
+	bigint &operator+=(const bigint &rhs);
+	bigint &operator-=(const bigint &rhs);
+	bigint &operator*=(const bigint &rhs);
+	bigint &operator/=(const bigint &rhs);    // throw
+	bigint &operator%=(const bigint &rhs);    // throw
+	bigint &operator>>=(int rhs);
+	bigint &operator<<=(int rhs);
+	bigint &operator&=(const bigint &rhs);
+	bigint &operator|=(const bigint &rhs);
+	bigint &operator^=(const bigint &rhs);
 
 	/* Increment/Decrement Operators */
 	bigint operator-() const;
-	bigint& operator--();
-	bigint& operator++();
+	bigint &operator--();
+	bigint &operator++();
 	bigint operator--(int);
 	bigint operator++(int);
 
@@ -108,8 +114,8 @@ public:
 	bigint operator+(const bigint &rhs) const;
 	bigint operator-(const bigint &rhs) const;
 	bigint operator*(const bigint &rhs) const;
-	bigint operator/(const bigint &rhs) const; // throw
-	bigint operator%(const bigint &rhs) const; // throw
+	bigint operator/(const bigint &rhs) const;    // throw
+	bigint operator%(const bigint &rhs) const;    // throw
 	bigint operator>>(int rhs) const;
 	bigint operator<<(int rhs) const;
 	bigint operator~() const;
@@ -132,14 +138,15 @@ public:
 
 	/* Other Stuff */
 	bigint abs() const;
-	bigint sqrt() const; // throw
+	bigint sqrt() const;    // throw
 	size_t size() const;
 
 	std::pair<bigint, bigint> div(const bigint &rhs) const;
 
 	/* Conversion */
 	std::string to_string(int base = 10, const std::string &prefix = "") const;
-	
+	std::vector<char> to_byte_array() const;
+
 	int to_int() const;
 	long to_long() const;
 	long long to_llong() const;
@@ -152,11 +159,12 @@ private:
 	int sign;
 
 	void clamp();
-	void from_string(const std::string&);
-	
-	int cmp(const bigint&, bool) const;
+	void from_string(const std::string &);
+	void from_byte_array(const std::vector<char> &);
 
-	bigint add(const bigint&) const;
-	bigint sub(const bigint&) const;
+	int cmp(const bigint &, bool) const;
+
+	bigint add(const bigint &) const;
+	bigint sub(const bigint &) const;
 	bigint invert(size_t) const;
 };

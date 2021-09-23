@@ -21,16 +21,17 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <algorithm>
-#include <iostream>
-#include <climits>
-
 #include "bigint.hpp"
 
+#include <algorithm>
+#include <climits>
+#include <cstring>
+#include <iostream>
+
 #ifdef _WIN32
-#define CLZ(x) __lzcnt(x)
+	#define CLZ(x) __lzcnt(x)
 #elif __unix__
-#define CLZ(x) __builtin_clz(x)
+	#define CLZ(x) __builtin_clz(x)
 #endif
 
 /* Private {{{ */
@@ -48,6 +49,14 @@ void bigint::clamp()
 
 void bigint::from_string(const std::string &s)
 {
+	if (s.empty())
+	{
+		words.push_back(0);
+		sign = 0;
+
+		return;
+	}
+
 	int base = 10;
 	int sign = 0;
 	size_t i = 0;
@@ -97,6 +106,26 @@ void bigint::from_string(const std::string &s)
 	}
 
 	this->sign = sign;
+}
+
+void bigint::from_byte_array(const std::vector<char> &v)
+{
+	if (v.empty())
+	{
+		words.push_back(0);
+		sign = 0;
+
+		return;
+	}
+
+	size_t vsize = v.size() - 1;
+	const char *vdata = v.data();
+	words.resize(vsize / 4, 0);
+
+	for (size_t i = 0; i < words.size(); ++i, vdata += WORD_SIZE)
+		memcpy(&words[i], vdata, 4);
+
+	sign = v.back();
 }
 
 int bigint::cmp(const bigint &rhs, bool abs = false) const
@@ -152,7 +181,7 @@ bigint bigint::add(const bigint &rhs) const
 		word_t new_word = hi_word + lo_word + carry;
 
 		if ((lo_word == WORD_MAX && carry != 0)
-			|| (hi_word > WORD_MAX - lo_word - carry))
+		    || (hi_word > WORD_MAX - lo_word - carry))
 			carry = 1;
 		else
 			carry = 0;
@@ -202,8 +231,8 @@ bigint bigint::sub(const bigint &rhs) const
 		word_t new_word = hi_word - lo_word - carry;
 
 		if ((hi_word == lo_word && carry != 0)
-			|| (lo_word > hi_word) 
-			|| (lo_word + carry > hi_word))
+		    || (lo_word > hi_word)
+		    || (lo_word + carry > hi_word))
 			carry = 1;
 		else
 			carry = 0;
@@ -249,7 +278,8 @@ bigint bigint::invert(size_t size = 0) const
 
 /* Constructors {{{ */
 
-bigint::bigint() : sign(0) 
+bigint::bigint()
+	: sign(0)
 {
 	words.push_back(0);
 }
@@ -264,10 +294,16 @@ bigint::bigint(const std::string &s)
 	from_string(s);
 }
 
-bigint::bigint(int l) : sign(l < 0)
+bigint::bigint(const std::vector<char> &v)
+{
+	from_byte_array(v);
+}
+
+bigint::bigint(int l)
+	: sign(l < 0)
 {
 	bool add_one = false;
-	
+
 	if (l == INT_MIN)
 	{
 		l++;
@@ -278,13 +314,14 @@ bigint::bigint(int l) : sign(l < 0)
 		l = -l;
 
 	unsigned int ul = l;
-	if (add_one) 
+	if (add_one)
 		ul++;
 
 	words.push_back(ul);
 }
 
-bigint::bigint(long l) : sign(l < 0)
+bigint::bigint(long l)
+	: sign(l < 0)
 {
 	bool add_one = false;
 
@@ -298,7 +335,7 @@ bigint::bigint(long l) : sign(l < 0)
 		l = -l;
 
 	unsigned long ul = l;
-	if (add_one) 
+	if (add_one)
 		ul++;
 
 	do
@@ -308,7 +345,8 @@ bigint::bigint(long l) : sign(l < 0)
 	} while (ul > 0);
 }
 
-bigint::bigint(long long l) : sign(l < 0)
+bigint::bigint(long long l)
+	: sign(l < 0)
 {
 	bool add_one = false;
 
@@ -332,48 +370,60 @@ bigint::bigint(long long l) : sign(l < 0)
 	} while (ul > 0);
 }
 
-bigint::bigint(unsigned int l) : sign(0)
+bigint::bigint(unsigned int l)
+	: sign(0)
 {
 	words.push_back(l);
 }
 
-bigint::bigint(unsigned long l) : sign(0)
+bigint::bigint(unsigned long l)
+	: sign(0)
 {
 	do
 	{
 		words.push_back(l & WORD_MASK);
 		l >>= WORD_BIT;
-	} while(l > 0);
+	} while (l > 0);
 }
 
-bigint::bigint(unsigned long long l) : sign(0)
+bigint::bigint(unsigned long long l)
+	: sign(0)
 {
 	do
 	{
 		words.push_back(l & WORD_MASK);
 		l >>= WORD_BIT;
-	} while(l > 0);
+	} while (l > 0);
 }
 
-bigint::bigint(const bigint &l) : words(l.words), sign(l.sign) {}
+bigint::bigint(const bigint &l)
+	: words(l.words)
+	, sign(l.sign)
+{}
 
 /* }}} Constructors */
 
 /* Assignment Operators {{{ */
 
-bigint& bigint::operator=(const char *c)
+bigint &bigint::operator=(const char *c)
 {
 	from_string(c);
 	return *this;
 }
 
-bigint& bigint::operator=(const std::string &s)
+bigint &bigint::operator=(const std::string &s)
 {
 	from_string(s);
 	return *this;
 }
 
-bigint& bigint::operator=(int l)
+bigint &bigint::operator=(const std::vector<char> &v)
+{
+	from_byte_array(v);
+	return *this;
+}
+
+bigint &bigint::operator=(int l)
 {
 	sign = l < 0;
 	words.clear();
@@ -398,7 +448,7 @@ bigint& bigint::operator=(int l)
 	return *this;
 }
 
-bigint& bigint::operator=(long l)
+bigint &bigint::operator=(long l)
 {
 	sign = l < 0;
 	words.clear();
@@ -417,7 +467,7 @@ bigint& bigint::operator=(long l)
 	unsigned long ul = l;
 	if (add_one)
 		ul++;
-	
+
 	do
 	{
 		words.push_back(ul & WORD_MASK);
@@ -427,7 +477,7 @@ bigint& bigint::operator=(long l)
 	return *this;
 }
 
-bigint& bigint::operator=(long long l)
+bigint &bigint::operator=(long long l)
 {
 	sign = l < 0;
 	words.clear();
@@ -456,7 +506,7 @@ bigint& bigint::operator=(long long l)
 	return *this;
 }
 
-bigint& bigint::operator=(unsigned int l)
+bigint &bigint::operator=(unsigned int l)
 {
 	sign = 0;
 	words.clear();
@@ -465,7 +515,7 @@ bigint& bigint::operator=(unsigned int l)
 	return *this;
 }
 
-bigint& bigint::operator=(unsigned long l)
+bigint &bigint::operator=(unsigned long l)
 {
 	sign = 0;
 	words.clear();
@@ -479,7 +529,7 @@ bigint& bigint::operator=(unsigned long l)
 	return *this;
 }
 
-bigint& bigint::operator=(unsigned long long l)
+bigint &bigint::operator=(unsigned long long l)
 {
 	sign = 0;
 	words.clear();
@@ -493,7 +543,7 @@ bigint& bigint::operator=(unsigned long long l)
 	return *this;
 }
 
-bigint& bigint::operator=(const bigint &l)
+bigint &bigint::operator=(const bigint &l)
 {
 	sign = l.sign;
 	words = l.words;
@@ -501,61 +551,61 @@ bigint& bigint::operator=(const bigint &l)
 	return *this;
 }
 
-bigint& bigint::operator+=(const bigint &rhs)
+bigint &bigint::operator+=(const bigint &rhs)
 {
 	*this = *this + rhs;
 	return *this;
 }
 
-bigint& bigint::operator-=(const bigint &rhs)
+bigint &bigint::operator-=(const bigint &rhs)
 {
 	*this = *this - rhs;
 	return *this;
 }
 
-bigint& bigint::operator*=(const bigint &rhs)
+bigint &bigint::operator*=(const bigint &rhs)
 {
 	*this = *this * rhs;
 	return *this;
 }
 
-bigint& bigint::operator%=(const bigint &rhs)
+bigint &bigint::operator%=(const bigint &rhs)
 {
 	*this = *this % rhs;
 	return *this;
 }
 
-bigint& bigint::operator/=(const bigint &rhs)
+bigint &bigint::operator/=(const bigint &rhs)
 {
 	*this = *this / rhs;
 	return *this;
 }
 
-bigint& bigint::operator>>=(int rhs)
+bigint &bigint::operator>>=(int rhs)
 {
 	*this = *this >> rhs;
 	return *this;
 }
 
-bigint& bigint::operator<<=(int rhs)
+bigint &bigint::operator<<=(int rhs)
 {
 	*this = *this << rhs;
 	return *this;
 }
 
-bigint& bigint::operator&=(const bigint &rhs)
+bigint &bigint::operator&=(const bigint &rhs)
 {
 	*this = *this & rhs;
 	return *this;
 }
 
-bigint& bigint::operator|=(const bigint &rhs)
+bigint &bigint::operator|=(const bigint &rhs)
 {
 	*this = *this | rhs;
 	return *this;
 }
 
-bigint& bigint::operator^=(const bigint &rhs)
+bigint &bigint::operator^=(const bigint &rhs)
 {
 	*this = *this ^ rhs;
 	return *this;
@@ -572,13 +622,13 @@ bigint bigint::operator-() const
 	return result;
 }
 
-bigint& bigint::operator--()
+bigint &bigint::operator--()
 {
 	*this = *this - 1;
 	return *this;
 }
 
-bigint& bigint::operator++()
+bigint &bigint::operator++()
 {
 	*this = *this + 1;
 	return *this;
@@ -676,7 +726,7 @@ bigint bigint::operator-(const bigint &rhs) const
 	return result;
 }
 
-bigint bigint::operator*(const bigint &rhs) const 
+bigint bigint::operator*(const bigint &rhs) const
 {
 	if (*this == 0 || rhs == 0)
 		return 0;
@@ -757,7 +807,7 @@ bigint bigint::operator>>(int rhs) const
 	lword_t mask = (1ULL << rshift) - 1;
 	lword_t r = 0;
 
-	for (size_t i = result.words.size() - 1; i >= 0; --i) 
+	for (size_t i = result.words.size() - 1; i >= 0; --i)
 	{
 		lword_t res_word = result.words[i];
 		lword_t rr = res_word & mask;
@@ -907,7 +957,8 @@ bigint bigint::operator^(const bigint &rhs) const
 
 /* Logical Operators {{{ */
 
-bool bigint::operator!() const {
+bool bigint::operator!() const
+{
 	return *this == 0;
 }
 
@@ -959,13 +1010,13 @@ bool bigint::operator>=(const bigint &rhs) const
 
 /* Stream operators {{{ */
 
-std::ostream& operator<<(std::ostream &s, const bigint &bi)
+std::ostream &operator<<(std::ostream &s, const bigint &bi)
 {
 	s << bi.to_string();
 	return s;
 }
 
-std::istream& operator>>(std::istream &s, bigint &bi)
+std::istream &operator>>(std::istream &s, bigint &bi)
 {
 	std::string str;
 	s >> str;
@@ -1004,7 +1055,7 @@ std::string bigint::to_string(int base, const std::string &prefix) const
 		tmp = quot;
 	}
 
-	for (auto iter = prefix.end() - 1; iter >= prefix.begin(); --iter) 
+	for (auto iter = prefix.end() - 1; iter >= prefix.begin(); --iter)
 		result.push_back(*iter);
 
 	if (sign == 1)
@@ -1015,13 +1066,31 @@ std::string bigint::to_string(int base, const std::string &prefix) const
 	return result;
 }
 
+std::vector<char> bigint::to_byte_array() const
+{
+	std::vector<char> result;
+	result.resize(size() + 1, 0);
+
+	char *rdata = result.data();
+
+	for (auto it : words)
+	{
+		memcpy(rdata, &it, WORD_SIZE);
+		rdata += WORD_SIZE;
+	}
+
+	result.back() = sign;
+
+	return result;
+}
+
 int bigint::to_int() const
 {
 	if (*this > INT_MAX || *this < INT_MIN)
 		throw bigint_exception("out of bounds");
 
 	int result = words[0];
-	
+
 	return sign ? -result : result;
 }
 
@@ -1142,7 +1211,7 @@ bigint bigint::sqrt() const
 			lo = mid;
 			break;
 		}
-		
+
 		if (mid2 < *this)
 			lo = mid;
 		else
@@ -1154,7 +1223,7 @@ bigint bigint::sqrt() const
 
 size_t bigint::size() const
 {
-	return words.size() * sizeof(word_t);
+	return words.size() * WORD_SIZE;
 }
 
 std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
@@ -1163,21 +1232,21 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 		throw bigint_exception("division by zero");
 
 	if (*this == 0)
-		return std::pair(0, 0);
+		return std::pair<bigint, bigint>(0, 0);
 
 	if (rhs == 1)
-		return std::pair(*this, 0);
+		return std::pair<bigint, bigint>(*this, 0);
 
 	if (cmp(rhs, true) < 0)
-		return std::pair(0, *this);
+		return std::pair<bigint, bigint>(0, *this);
 
-	lword_t b = WORD_BASE; // Number base
-	lword_t mask = WORD_MASK; // Number mask b - 1
+	lword_t b = WORD_BASE;       // Number base
+	lword_t mask = WORD_MASK;    // Number mask b - 1
 
-	std::vector<word_t> tn, rn; // Normalized form of dividend(*this) and divisor(&rhs)
-	lword_t qhat; // Estimated quotient digit
-	lword_t rhat; // A remainder
-	lword_t p; // Product of two digits
+	std::vector<word_t> tn, rn;    // Normalized form of dividend(*this) and divisor(&rhs)
+	lword_t qhat;                  // Estimated quotient digit
+	lword_t rhat;                  // A remainder
+	lword_t p;                     // Product of two digits
 
 	slword_t t, k;
 
@@ -1211,7 +1280,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 		quot.clamp();
 		rem.clamp();
 
-		return std::pair(quot, rem);
+		return std::pair<bigint, bigint>(quot, rem);
 	}
 
 	// Normalize by shifting v left just enough so that
@@ -1235,18 +1304,18 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 
 	tn[0] = (words[0] << s) & mask;
 
-	for (size_t j = m - n; j >= 0; --j) // Main loop
+	for (size_t j = m - n; j >= 0; --j)    // Main loop
 	{
 		// Compute estimate qhat of q[j]
 		qhat = ((tn[j + n] * b) + tn[j + n - 1]) / (rn[n - 1]);
 		rhat = ((tn[j + n] * b) + tn[j + n - 1]) % rn[n - 1];
 
-		while (1) 
+		while (1)
 		{
 			if (qhat >= b || (static_cast<word_t>(qhat) * static_cast<lword_t>(rn[n - 2])) > (b * rhat + tn[j + n - 2]))
 			{
 				qhat -= 1;
-				rhat += rn[n-1];
+				rhat += rn[n - 1];
 
 				if (rhat < b)
 					continue;
@@ -1268,11 +1337,11 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 		t = tn[j + n] - k;
 		tn[j + n] = t;
 
-		quot.words[j] = qhat; // Store quotient digit
+		quot.words[j] = qhat;    // Store quotient digit
 
-		if (t < 0) // If we subtracted too
+		if (t < 0)    // If we subtracted too
 		{
-			quot.words[j] -= 1; // ...much, add back
+			quot.words[j] -= 1;    // ...much, add back
 			k = 0;
 
 			for (size_t i = 0; i < n; ++i)
@@ -1300,7 +1369,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	quot.clamp();
 	rem.clamp();
 
-	return std::pair(quot, rem);
+	return std::pair<bigint, bigint>(quot, rem);
 }
 
 /* }}} Other Stuff */

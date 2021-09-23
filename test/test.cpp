@@ -1,8 +1,8 @@
+#include "bigint.hpp"
+
 #include <cassert>
 #include <climits>
 #include <random>
-
-#include "bigint.hpp"
 
 class bigint_test
 {
@@ -101,7 +101,7 @@ public:
 
 			int64_t r1 = g() & INT32_MAX;
 			int64_t r2 = g() & INT32_MAX;
-			
+
 			int32_t r3 = dist(rd);
 
 			{
@@ -227,8 +227,28 @@ public:
 			assert((i1 || i2) == (r1 || r2));
 		}
 	}
-};
 
+	void byte_array()
+	{
+		std::mt19937 mt(time(0));
+
+		for (int i = 0; i < 1000; ++i)
+		{
+			long r1 = mt();
+
+			if (r1 % 2 == 0)
+				r1 = -r1;
+
+			bigint i1 = r1;
+
+			std::vector<char> v1 = i1.to_byte_array();
+			bigint i2 = v1;
+
+			assert(i1 == i2);
+			assert(i2 == r1);
+		}
+	}
+};
 
 int main()
 {
@@ -239,6 +259,7 @@ int main()
 	test.abs();
 	test.arithmetic();
 	test.logic();
+	test.byte_array();
 
 	return 0;
 }
