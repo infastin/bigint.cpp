@@ -241,13 +241,13 @@ public:
 
 			bigint i1 = r1;
 
-			std::vector<char> v1 = i1.to_byte_array();
-			bigint i2 = v1;
+			std::string v1 = i1.to_byte_array();
+			bigint i2 = bigint::from_byte_array(v1);
 
 			assert(i1 == i2);
 			assert(i2 == r1);
 
-			i1 = v1;
+			i1 = bigint::from_byte_array(v1);
 
 			assert(i1 == i2);
 		}

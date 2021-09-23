@@ -71,7 +71,6 @@ public:
 	bigint();
 	bigint(const char *c);
 	bigint(const std::string &s);
-	bigint(const std::vector<char> &v);
 	bigint(int l);
 	bigint(long l);
 	bigint(long long l);
@@ -80,10 +79,13 @@ public:
 	bigint(unsigned long long l);
 	bigint(const bigint &l);
 
+	/* Named constructors */
+	static bigint from_byte_array(const std::string &b);
+	static bigint from_byte_array(const char *b, size_t sz);
+
 	/* Assignment Operators */
 	bigint &operator=(const char *c);
 	bigint &operator=(const std::string &s);
-	bigint &operator=(const std::vector<char> &v);
 	bigint &operator=(int l);
 	bigint &operator=(long l);
 	bigint &operator=(long long l);
@@ -145,7 +147,7 @@ public:
 
 	/* Conversion */
 	std::string to_string(int base = 10, const std::string &prefix = "") const;
-	std::vector<char> to_byte_array() const;
+	std::string to_byte_array() const;
 
 	int to_int() const;
 	long to_long() const;
@@ -159,8 +161,9 @@ private:
 	int sign;
 
 	void clamp();
-	void from_string(const std::string &);
-	void from_byte_array(const std::vector<char> &);
+	void conv_string(const std::string &);
+
+	void conv_byte_array(const std::string &);
 
 	int cmp(const bigint &, bool) const;
 

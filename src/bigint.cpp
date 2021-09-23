@@ -47,7 +47,7 @@ void bigint::clamp()
 	}
 }
 
-void bigint::from_string(const std::string &s)
+void bigint::conv_string(const std::string &s)
 {
 	if (s.empty())
 	{
@@ -108,9 +108,9 @@ void bigint::from_string(const std::string &s)
 	this->sign = sign;
 }
 
-void bigint::from_byte_array(const std::vector<char> &v)
+void bigint::conv_byte_array(const std::string &b)
 {
-	if (v.empty())
+	if (b.empty())
 	{
 		words.push_back(0);
 		sign = 0;
@@ -118,14 +118,14 @@ void bigint::from_byte_array(const std::vector<char> &v)
 		return;
 	}
 
-	size_t vsize = v.size() - 1;
-	const char *vdata = v.data();
+	size_t vsize = b.size() - 1;
+	const char *vdata = b.data();
 	words.resize(vsize / 4, 0);
 
 	for (size_t i = 0; i < words.size(); ++i, vdata += WORD_SIZE)
 		memcpy(&words[i], vdata, 4);
 
-	sign = v.back();
+	sign = b.back();
 }
 
 int bigint::cmp(const bigint &rhs, bool abs = false) const
@@ -286,17 +286,12 @@ bigint::bigint()
 
 bigint::bigint(const char *c)
 {
-	from_string(c);
+	conv_string(c);
 }
 
 bigint::bigint(const std::string &s)
 {
-	from_string(s);
-}
-
-bigint::bigint(const std::vector<char> &v)
-{
-	from_byte_array(v);
+	conv_string(s);
 }
 
 bigint::bigint(int l)
@@ -403,23 +398,37 @@ bigint::bigint(const bigint &l)
 
 /* }}} Constructors */
 
+/* Named constructors {{{ */
+
+bigint bigint::from_byte_array(const char *b, size_t sz)
+{
+	bigint result;
+	result.conv_byte_array({ b, sz });
+	return result;
+}
+
+bigint bigint::from_byte_array(const std::string &b)
+{
+	bigint result;
+	result.conv_byte_array(b);
+	return result;
+}
+
+/* }}} Named constructors */
+
 /* Assignment Operators {{{ */
 
 bigint &bigint::operator=(const char *c)
 {
-	from_string(c);
+	words.clear();
+	conv_string(c);
 	return *this;
 }
 
 bigint &bigint::operator=(const std::string &s)
 {
-	from_string(s);
-	return *this;
-}
-
-bigint &bigint::operator=(const std::vector<char> &v)
-{
-	from_byte_array(v);
+	words.clear();
+	conv_string(s);
 	return *this;
 }
 
@@ -1020,7 +1029,7 @@ std::istream &operator>>(std::istream &s, bigint &bi)
 {
 	std::string str;
 	s >> str;
-	bi.from_string(str);
+	bi.conv_string(str);
 	return s;
 }
 
@@ -1066,17 +1075,17 @@ std::string bigint::to_string(int base, const std::string &prefix) const
 	return result;
 }
 
-std::vector<char> bigint::to_byte_array() const
+std::string bigint::to_byte_array() const
 {
-	std::vector<char> result;
+	std::string result;
 	result.resize(size() + 1, 0);
 
-	char *rdata = result.data();
+	auto rb = result.begin();
 
 	for (auto it : words)
 	{
-		memcpy(rdata, &it, WORD_SIZE);
-		rdata += WORD_SIZE;
+		std::copy_n(reinterpret_cast<const char *>(&it), 4, rb);
+		rb += 4;
 	}
 
 	result.back() = sign;

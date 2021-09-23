@@ -85,8 +85,9 @@ int main()
 	unsigned long long ulla = a.to_ullong();
 	
 	/* Consists of groups of 4 bytes, the last byte represents the sign */
-	std::vector<char> v = a.to_byte_array();
-	bigint e = v;
+	std::string v = a.to_byte_array();
+	bigint e = bigint::from_byte_array(v);
+	bigint f = bigint::from_byte_array(v.data(), v.size());
 	
 	bigint asqrt = a.sqrt();
 	bigint aabs = a.abs();
