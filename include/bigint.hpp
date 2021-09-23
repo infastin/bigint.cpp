@@ -27,16 +27,6 @@
 #include <iostream>
 #include <vector>
 
-typedef uint32_t word_t;
-typedef uint64_t lword_t;
-typedef int64_t slword_t;
-
-#define WORD_BIT 32
-#define WORD_MAX UINT32_MAX
-#define WORD_MASK WORD_MAX
-#define WORD_BASE (1ULL << WORD_BIT)
-#define WORD_SIZE (sizeof(word_t))
-
 #ifdef _WIN32
 	#ifdef BIGINT_EXPORTS
 		#define BIGINT_API __declspec(dllexport)
@@ -97,8 +87,8 @@ public:
 	bigint &operator+=(const bigint &rhs);
 	bigint &operator-=(const bigint &rhs);
 	bigint &operator*=(const bigint &rhs);
-	bigint &operator/=(const bigint &rhs);    // throw
-	bigint &operator%=(const bigint &rhs);    // throw
+	bigint &operator/=(const bigint &rhs);  // throw
+	bigint &operator%=(const bigint &rhs);  // throw
 	bigint &operator>>=(int rhs);
 	bigint &operator<<=(int rhs);
 	bigint &operator&=(const bigint &rhs);
@@ -116,8 +106,8 @@ public:
 	bigint operator+(const bigint &rhs) const;
 	bigint operator-(const bigint &rhs) const;
 	bigint operator*(const bigint &rhs) const;
-	bigint operator/(const bigint &rhs) const;    // throw
-	bigint operator%(const bigint &rhs) const;    // throw
+	bigint operator/(const bigint &rhs) const;  // throw
+	bigint operator%(const bigint &rhs) const;  // throw
 	bigint operator>>(int rhs) const;
 	bigint operator<<(int rhs) const;
 	bigint operator~() const;
@@ -140,7 +130,7 @@ public:
 
 	/* Other Stuff */
 	bigint abs() const;
-	bigint sqrt() const;    // throw
+	bigint sqrt() const;  // throw
 	size_t size() const;
 
 	std::pair<bigint, bigint> div(const bigint &rhs) const;
@@ -157,6 +147,8 @@ public:
 	unsigned long long to_ullong() const;
 
 private:
+	typedef uint32_t word_t;
+
 	std::vector<word_t> words;
 	int sign;
 

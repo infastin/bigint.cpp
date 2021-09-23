@@ -27,6 +27,15 @@
 #include <climits>
 #include <iostream>
 
+typedef uint64_t lword_t;
+typedef int64_t slword_t;
+
+#define WORD_BITN 32
+#define WORD_MAX UINT32_MAX
+#define WORD_MASK WORD_MAX
+#define WORD_BASE (1ULL << WORD_BITN)
+#define WORD_SIZE (sizeof(word_t))
+
 #ifdef _WIN32
 	#define CLZ(x) __lzcnt(x)
 #elif __unix__
@@ -355,7 +364,7 @@ bigint::bigint(long l)
 	do
 	{
 		words.push_back(ul & WORD_MASK);
-		ul >>= WORD_BIT;
+		ul >>= WORD_BITN;
 	} while (ul > 0);
 }
 
@@ -380,7 +389,7 @@ bigint::bigint(long long l)
 	do
 	{
 		words.push_back(ul & WORD_MASK);
-		ul >>= WORD_BIT;
+		ul >>= WORD_BITN;
 	} while (ul > 0);
 }
 
@@ -396,7 +405,7 @@ bigint::bigint(unsigned long l)
 	do
 	{
 		words.push_back(l & WORD_MASK);
-		l >>= WORD_BIT;
+		l >>= WORD_BITN;
 	} while (l > 0);
 }
 
@@ -406,7 +415,7 @@ bigint::bigint(unsigned long long l)
 	do
 	{
 		words.push_back(l & WORD_MASK);
-		l >>= WORD_BIT;
+		l >>= WORD_BITN;
 	} while (l > 0);
 }
 
@@ -499,7 +508,7 @@ bigint &bigint::operator=(long l)
 	do
 	{
 		words.push_back(ul & WORD_MASK);
-		ul >>= WORD_BIT;
+		ul >>= WORD_BITN;
 	} while (ul > 0);
 
 	return *this;
@@ -528,7 +537,7 @@ bigint &bigint::operator=(long long l)
 	do
 	{
 		words.push_back(ul & WORD_MASK);
-		ul >>= WORD_BIT;
+		ul >>= WORD_BITN;
 	} while (ul > 0);
 
 	return *this;
@@ -551,7 +560,7 @@ bigint &bigint::operator=(unsigned long l)
 	do
 	{
 		words.push_back(l & WORD_MASK);
-		l >>= WORD_BIT;
+		l >>= WORD_BITN;
 	} while (l > 0);
 
 	return *this;
@@ -565,7 +574,7 @@ bigint &bigint::operator=(unsigned long long l)
 	do
 	{
 		words.push_back(l & WORD_MASK);
-		l >>= WORD_BIT;
+		l >>= WORD_BITN;
 	} while (l > 0);
 
 	return *this;
@@ -780,7 +789,7 @@ bigint bigint::operator*(const bigint &rhs) const
 
 			lword_t new_word = res_word + (hi_word * lo_word) + carry;
 
-			carry = new_word >> WORD_BIT;
+			carry = new_word >> WORD_BITN;
 			result.words[i + j] = new_word;
 		}
 
@@ -816,8 +825,8 @@ bigint bigint::operator>>(int rhs) const
 	if (rhs < 0)
 		return *this << -rhs;
 
-	int wrshift = rhs / WORD_BIT;
-	int rshift = rhs % WORD_BIT;
+	int wrshift = rhs / WORD_BITN;
+	int rshift = rhs % WORD_BITN;
 
 	if ((size_t) wrshift >= words.size())
 		return 0;
@@ -830,7 +839,7 @@ bigint bigint::operator>>(int rhs) const
 	if (rshift == 0)
 		return result;
 
-	int shift = WORD_BIT - rshift;
+	int shift = WORD_BITN - rshift;
 
 	lword_t mask = (1ULL << rshift) - 1;
 	lword_t r = 0;
@@ -863,8 +872,8 @@ bigint bigint::operator<<(int rhs) const
 	if (rhs < 0)
 		return *this >> -rhs;
 
-	int wlshift = rhs / WORD_BIT;
-	int lshift = rhs % WORD_BIT;
+	int wlshift = rhs / WORD_BITN;
+	int lshift = rhs % WORD_BITN;
 
 	bigint result = *this;
 
@@ -878,7 +887,7 @@ bigint bigint::operator<<(int rhs) const
 	if (lshift == 0)
 		return result;
 
-	int shift = WORD_BIT - lshift;
+	int shift = WORD_BITN - lshift;
 
 	lword_t mask = (1ULL << lshift) - 1;
 	lword_t r = 0;
@@ -1131,7 +1140,7 @@ long bigint::to_long() const
 
 	for (size_t i = words.size() - 1; i >= 0; --i)
 	{
-		result <<= WORD_BIT;
+		result <<= WORD_BITN;
 		result |= words[i];
 
 		if (i == 0)
@@ -1150,7 +1159,7 @@ long long bigint::to_llong() const
 
 	for (size_t i = words.size() - 1; i >= 0; --i)
 	{
-		result <<= WORD_BIT;
+		result <<= WORD_BITN;
 		result |= words[i];
 
 		if (i == 0)
@@ -1177,7 +1186,7 @@ unsigned long bigint::to_ulong() const
 
 	for (size_t i = words.size() - 1; i >= 0; --i)
 	{
-		result <<= WORD_BIT;
+		result <<= WORD_BITN;
 		result |= words[i];
 
 		if (i == 0)
@@ -1196,7 +1205,7 @@ unsigned long long bigint::to_ullong() const
 
 	for (size_t i = words.size() - 1; i >= 0; --i)
 	{
-		result <<= WORD_BIT;
+		result <<= WORD_BITN;
 		result |= words[i];
 
 		if (i == 0)
@@ -1268,13 +1277,13 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	if (cmp(rhs, true) < 0)
 		return std::pair<bigint, bigint>(0, *this);
 
-	lword_t b = WORD_BASE;       // Number base
-	lword_t mask = WORD_MASK;    // Number mask b - 1
+	lword_t b = WORD_BASE;     // Number base
+	lword_t mask = WORD_MASK;  // Number mask b - 1
 
-	std::vector<word_t> tn, rn;    // Normalized form of dividend(*this) and divisor(&rhs)
-	lword_t qhat;                  // Estimated quotient digit
-	lword_t rhat;                  // A remainder
-	lword_t p;                     // Product of two digits
+	std::vector<word_t> tn, rn;  // Normalized form of dividend(*this) and divisor(&rhs)
+	lword_t qhat;                // Estimated quotient digit
+	lword_t rhat;                // A remainder
+	lword_t p;                   // Product of two digits
 
 	slword_t t, k;
 
@@ -1320,19 +1329,19 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	rn.resize(n, 0);
 
 	for (size_t i = n - 1; i > 0; --i)
-		rn[i] = ((rhs.words[i] << s) & mask) | ((static_cast<lword_t>(rhs.words[i - 1]) >> (WORD_BIT - s)) & mask);
+		rn[i] = ((rhs.words[i] << s) & mask) | ((static_cast<lword_t>(rhs.words[i - 1]) >> (WORD_BITN - s)) & mask);
 
 	rn[0] = (rhs.words[0] << s) & mask;
 
 	tn.resize(m + 1, 0);
-	tn[m] = (words[m - 1] >> (WORD_BIT - s)) & mask;
+	tn[m] = (words[m - 1] >> (WORD_BITN - s)) & mask;
 
 	for (size_t i = m - 1; i > 0; --i)
-		tn[i] = ((words[i] << s) & mask) | ((static_cast<lword_t>(words[i - 1]) >> (WORD_BIT - s)) & mask);
+		tn[i] = ((words[i] << s) & mask) | ((static_cast<lword_t>(words[i - 1]) >> (WORD_BITN - s)) & mask);
 
 	tn[0] = (words[0] << s) & mask;
 
-	for (size_t j = m - n; j >= 0; --j)    // Main loop
+	for (size_t j = m - n; j >= 0; --j)  // Main loop
 	{
 		// Compute estimate qhat of q[j]
 		qhat = ((tn[j + n] * b) + tn[j + n - 1]) / (rn[n - 1]);
@@ -1365,11 +1374,11 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 		t = tn[j + n] - k;
 		tn[j + n] = t;
 
-		quot.words[j] = qhat;    // Store quotient digit
+		quot.words[j] = qhat;  // Store quotient digit
 
-		if (t < 0)    // If we subtracted too
+		if (t < 0)  // If we subtracted too
 		{
-			quot.words[j] -= 1;    // ...much, add back
+			quot.words[j] -= 1;  // ...much, add back
 			k = 0;
 
 			for (size_t i = 0; i < n; ++i)
@@ -1390,7 +1399,7 @@ std::pair<bigint, bigint> bigint::div(const bigint &rhs) const
 	// it and pass it back.
 
 	for (size_t i = 0; i < n; i++)
-		rem.words[i] = ((tn[i] >> s) & mask) | ((static_cast<lword_t>(tn[i + 1]) << (WORD_BIT - s)) & mask);
+		rem.words[i] = ((tn[i] >> s) & mask) | ((static_cast<lword_t>(tn[i + 1]) << (WORD_BITN - s)) & mask);
 
 	rem.words[n - 1] = (tn[n - 1] >> s) & mask;
 
