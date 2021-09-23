@@ -25,7 +25,6 @@
 
 #include <algorithm>
 #include <climits>
-#include <cstring>
 #include <iostream>
 
 #ifdef _WIN32
@@ -119,11 +118,11 @@ void bigint::conv_byte_array(const std::string &ba)
 	}
 
 	size_t ba_size = ba.size() - 1;
-	const char *ba_data = ba.data();
+	auto ba_iter = ba.begin();
 	words.resize(ba_size / 4, 0);
 
-	for (size_t i = 0; i < words.size(); ++i, ba_data += WORD_SIZE)
-		memcpy(&words[i], ba_data, 4);
+	for (size_t i = 0; i < words.size(); ++i, ba_iter += WORD_SIZE)
+		std::copy_n(ba_iter, 4, reinterpret_cast<char *>(&words[i]));
 
 	sign = ba.back();
 }
@@ -143,7 +142,7 @@ void bigint::conv_byte_array(const char *ba, size_t sz)
 	words.resize(ba_size / 4, 0);
 
 	for (size_t i = 0; i < words.size(); ++i, ba_data += WORD_SIZE)
-		memcpy(&words[i], ba_data, 4);
+		std::copy_n(ba_data, 4, reinterpret_cast<char *>(&words[i]));
 
 	sign = ba[sz - 1];
 }
