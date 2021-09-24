@@ -12,7 +12,7 @@ cxx = meson.get_compiler('cpp')
 
 cppflags = []
 
-if cxx.get_id() == 'g++' or cxx.get_id() == 'clang'
+if cxx.get_id() == 'gcc' or cxx.get_id() == 'clang'
   cppflags = [
 	'-pipe',
 	'-funsigned-char'
